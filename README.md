@@ -16,7 +16,7 @@ Ein mobiles, deutschsprachiges Expense-Tracking-System für Familien mit automat
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15 mit React 19, TypeScript
+- **Frontend**: Next.js 16 mit React 19, TypeScript
 - **Styling**: Tailwind CSS (Dark Mode)
 - **Database**: SQLite mit Prisma ORM
 - **Deployment**: Docker-ready

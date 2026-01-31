@@ -36,7 +36,7 @@ export default function Settlement({ settlements }: SettlementProps) {
           <div>
             <h2 className="text-2xl font-bold flex items-center gap-2">
               Abrechnung
-              <Sparkles className="w-5 h-5 text-accent-400 animate-pulse" />
+              <Sparkles className="w-5 h-5 text-accent-400 animate-pulse" aria-hidden="true" />
             </h2>
             <p className="text-sm text-gray-400 mt-0.5">Offene Beträge</p>
           </div>
@@ -93,7 +93,7 @@ export default function Settlement({ settlements }: SettlementProps) {
         {/* Info Footer */}
         <div className="mt-5 pt-4 border-t border-white/5">
           <p className="text-xs text-gray-400 flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-accent-400" />
+            <Sparkles className="w-3.5 h-3.5 text-accent-400" aria-hidden="true" />
             Automatisch berechnet basierend auf allen Ausgaben
           </p>
         </div>

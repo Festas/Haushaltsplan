@@ -12,7 +12,7 @@ export default function ExpenseList({ expenses }: ExpenseListProps) {
     return (
       <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700/50 backdrop-blur-sm transition-smooth hover:border-primary-500/50 hover:shadow-glow text-center py-12">
         <div className="w-16 h-16 rounded-2xl bg-gray-700/50 flex items-center justify-center mx-auto mb-4">
-          <Receipt className="w-8 h-8 text-gray-500" />
+          <Receipt className="w-8 h-8 text-gray-500" aria-hidden="true" />
         </div>
         <p className="text-gray-400 text-lg">Noch keine Ausgaben vorhanden</p>
         <p className="text-gray-500 text-sm mt-2">Fügen Sie Ihre erste Ausgabe hinzu</p>
@@ -60,7 +60,7 @@ export default function ExpenseList({ expenses }: ExpenseListProps) {
         <div
           key={expense.id}
           className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700/50 backdrop-blur-sm transition-smooth hover:border-primary-500/50 hover:shadow-glow group animate-fade-in"
-          style={{ animationDelay: `${index * 50}ms` }}
+          style={index < 10 ? { animationDelay: `${index * 50}ms` } : undefined}
         >
           <div className="flex items-start gap-4">
             {/* Category Icon */}

@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Person {
+  id              String    @id @default(cuid())
+  name            String
+  isParent        Boolean   @default(false)
+  income          Float?    // For parents - used in WEIGHTED split
+  expensesPaid    Expense[] @relation("Payer")
+  assignedExpenses ExpenseAssignment[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  expenses  Expense[]
+  createdAt DateTime  @default(now())
+}
+
+model Expense {
+  id          String    @id @default(cuid())
+  amount      Float
+  description String
+  date        DateTime  @default(now())
+  payer       Person    @relation("Payer", fields: [payerId], references: [id])
+  payerId     String
+  category    Category  @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  splitType   String    @default("EQUAL") // EQUAL, WEIGHTED, ASSIGNED
+  assignments ExpenseAssignment[]
+  recurringExpenseId String?
+  recurringExpense RecurringExpense? @relation(fields: [recurringExpenseId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ExpenseAssignment {
+  id         String   @id @default(cuid())
+  expense    Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  expenseId  String
+  person     Person   @relation(fields: [personId], references: [id])
+  personId   String
+  share      Float    // Percentage or amount based on splitType
+  createdAt  DateTime @default(now())
+
+  @@unique([expenseId, personId])
+}
+
+model RecurringExpense {
+  id          String    @id @default(cuid())
+  amount      Float
+  description String
+  payerId     String
+  categoryId  String
+  splitType   String    @default("EQUAL") // EQUAL, WEIGHTED, ASSIGNED
+  frequency   String    // daily, weekly, monthly, yearly
+  startDate   DateTime
+  endDate     DateTime?
+  lastCreated DateTime?
+  isActive    Boolean   @default(true)
+  expenses    Expense[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}

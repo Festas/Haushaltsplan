@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Plus, X, Check, DollarSign, User, Tag, Split } from 'lucide-react';
 
 interface Person {
   id: string;
@@ -101,58 +102,73 @@ export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
     return (
       <button
         onClick={() => setShowForm(true)}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors"
+        className="w-full btn-primary group flex items-center justify-center gap-3"
       >
-        + Neue Ausgabe hinzufügen
+        <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+        <span>Neue Ausgabe hinzufügen</span>
       </button>
     );
   }
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">Neue Ausgabe</h2>
+    <div className="card animate-scale-in">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary-500/10 flex items-center justify-center">
+            <Plus className="w-5 h-5 text-primary-400" />
+          </div>
+          Neue Ausgabe
+        </h2>
         <button
           onClick={() => setShowForm(false)}
-          className="text-gray-400 hover:text-white"
+          className="w-10 h-10 rounded-xl bg-gray-700/50 hover:bg-gray-600/50 flex items-center justify-center transition-smooth hover:rotate-90"
         >
-          ✕
+          <X className="w-5 h-5 text-gray-400" />
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className="block text-sm font-medium mb-2">Betrag (€)</label>
+          <label className="block text-sm font-medium mb-2 flex items-center gap-2 text-gray-300">
+            <DollarSign className="w-4 h-4 text-primary-400" />
+            Betrag (€)
+          </label>
           <input
             type="number"
             step="0.01"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             required
-            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="input-modern"
             placeholder="0.00"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">Beschreibung</label>
+          <label className="block text-sm font-medium mb-2 flex items-center gap-2 text-gray-300">
+            <Tag className="w-4 h-4 text-primary-400" />
+            Beschreibung
+          </label>
           <input
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
-            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="input-modern"
             placeholder="z.B. Einkauf bei Rewe"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">Bezahlt von</label>
+          <label className="block text-sm font-medium mb-2 flex items-center gap-2 text-gray-300">
+            <User className="w-4 h-4 text-primary-400" />
+            Bezahlt von
+          </label>
           <select
             value={payerId}
             onChange={(e) => setPayerId(e.target.value)}
             required
-            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="input-modern"
           >
             {persons.map((person) => (
               <option key={person.id} value={person.id}>
@@ -163,12 +179,15 @@ export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">Kategorie</label>
+          <label className="block text-sm font-medium mb-2 flex items-center gap-2 text-gray-300">
+            <Tag className="w-4 h-4 text-primary-400" />
+            Kategorie
+          </label>
           <select
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
             required
-            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="input-modern"
           >
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
@@ -179,67 +198,103 @@ export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">Aufteilung</label>
-          <div className="space-y-2">
+          <label className="block text-sm font-medium mb-3 flex items-center gap-2 text-gray-300">
+            <Split className="w-4 h-4 text-primary-400" />
+            Aufteilung
+          </label>
+          <div className="space-y-3">
             <button
               type="button"
               onClick={() => setSplitType('EQUAL')}
-              className={`w-full text-left px-4 py-3 rounded-lg border ${
+              className={`w-full text-left px-4 py-4 rounded-xl border transition-smooth ${
                 splitType === 'EQUAL'
-                  ? 'bg-blue-600 border-blue-500'
-                  : 'bg-gray-700 border-gray-600 hover:border-gray-500'
+                  ? 'bg-gradient-to-r from-primary-600/20 to-primary-700/20 border-primary-500/50 shadow-glow'
+                  : 'bg-gray-800/50 border-gray-600/50 hover:border-gray-500/50 hover:bg-gray-700/50'
               }`}
             >
-              <div className="font-medium">Gleichmäßig</div>
-              <div className="text-sm text-gray-400">50:50 zwischen Eltern</div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-medium text-white">Gleichmäßig</div>
+                  <div className="text-sm text-gray-400 mt-1">50:50 zwischen Eltern</div>
+                </div>
+                {splitType === 'EQUAL' && (
+                  <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center">
+                    <Check className="w-5 h-5 text-primary-400" />
+                  </div>
+                )}
+              </div>
             </button>
 
             <button
               type="button"
               onClick={() => setSplitType('WEIGHTED')}
-              className={`w-full text-left px-4 py-3 rounded-lg border ${
+              className={`w-full text-left px-4 py-4 rounded-xl border transition-smooth ${
                 splitType === 'WEIGHTED'
-                  ? 'bg-blue-600 border-blue-500'
-                  : 'bg-gray-700 border-gray-600 hover:border-gray-500'
+                  ? 'bg-gradient-to-r from-primary-600/20 to-primary-700/20 border-primary-500/50 shadow-glow'
+                  : 'bg-gray-800/50 border-gray-600/50 hover:border-gray-500/50 hover:bg-gray-700/50'
               }`}
             >
-              <div className="font-medium">Gewichtet</div>
-              <div className="text-sm text-gray-400">Nach Einkommen aufgeteilt</div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-medium text-white">Gewichtet</div>
+                  <div className="text-sm text-gray-400 mt-1">Nach Einkommen aufgeteilt</div>
+                </div>
+                {splitType === 'WEIGHTED' && (
+                  <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center">
+                    <Check className="w-5 h-5 text-primary-400" />
+                  </div>
+                )}
+              </div>
             </button>
 
             <button
               type="button"
               onClick={() => setSplitType('ASSIGNED')}
-              className={`w-full text-left px-4 py-3 rounded-lg border ${
+              className={`w-full text-left px-4 py-4 rounded-xl border transition-smooth ${
                 splitType === 'ASSIGNED'
-                  ? 'bg-blue-600 border-blue-500'
-                  : 'bg-gray-700 border-gray-600 hover:border-gray-500'
+                  ? 'bg-gradient-to-r from-primary-600/20 to-primary-700/20 border-primary-500/50 shadow-glow'
+                  : 'bg-gray-800/50 border-gray-600/50 hover:border-gray-500/50 hover:bg-gray-700/50'
               }`}
             >
-              <div className="font-medium">Zugewiesen</div>
-              <div className="text-sm text-gray-400">Für bestimmte Personen</div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-medium text-white">Zugewiesen</div>
+                  <div className="text-sm text-gray-400 mt-1">Für bestimmte Personen</div>
+                </div>
+                {splitType === 'ASSIGNED' && (
+                  <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center">
+                    <Check className="w-5 h-5 text-primary-400" />
+                  </div>
+                )}
+              </div>
             </button>
           </div>
         </div>
 
         {splitType === 'ASSIGNED' && (
-          <div>
-            <label className="block text-sm font-medium mb-2">Personen auswählen</label>
+          <div className="animate-slide-down">
+            <label className="block text-sm font-medium mb-3 text-gray-300">Personen auswählen</label>
             <div className="space-y-2">
               {persons.map((person) => (
                 <label
                   key={person.id}
-                  className="flex items-center px-4 py-2 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600"
+                  className={`flex items-center px-4 py-3 rounded-xl cursor-pointer transition-smooth ${
+                    assignedPersonIds.includes(person.id)
+                      ? 'bg-primary-600/20 border border-primary-500/50'
+                      : 'bg-gray-800/50 border border-gray-600/50 hover:bg-gray-700/50 hover:border-gray-500/50'
+                  }`}
                 >
                   <input
                     type="checkbox"
                     checked={assignedPersonIds.includes(person.id)}
                     onChange={() => toggleAssignedPerson(person.id)}
-                    className="mr-3 w-4 h-4"
+                    className="mr-3 w-5 h-5 rounded accent-primary-500"
                   />
-                  <span>{person.name}</span>
+                  <span className="flex-1 font-medium">{person.name}</span>
                   {!person.isParent && (
-                    <span className="ml-2 text-xs text-gray-400">(Kinderkosten 50:50)</span>
+                    <span className="text-xs text-gray-400 bg-gray-700/50 px-2 py-1 rounded-lg">
+                      Kinderkosten 50:50
+                    </span>
                   )}
                 </label>
               ))}
@@ -247,11 +302,11 @@ export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
           </div>
         )}
 
-        <div className="flex gap-3 pt-4">
+        <div className="flex gap-3 pt-6 border-t border-gray-700/50">
           <button
             type="button"
             onClick={() => setShowForm(false)}
-            className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+            className="flex-1 btn-secondary"
             disabled={loading}
           >
             Abbrechen
@@ -259,9 +314,19 @@ export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50"
+            className="flex-1 btn-primary flex items-center justify-center gap-2"
           >
-            {loading ? 'Wird gespeichert...' : 'Speichern'}
+            {loading ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Wird gespeichert...</span>
+              </>
+            ) : (
+              <>
+                <Check className="w-5 h-5" />
+                <span>Speichern</span>
+              </>
+            )}
           </button>
         </div>
       </form>

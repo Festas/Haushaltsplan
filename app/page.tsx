@@ -5,7 +5,7 @@ import ExpenseForm from '@/components/ExpenseForm';
 import ExpenseList from '@/components/ExpenseList';
 import Settlement from '@/components/Settlement';
 import { formatCurrency } from '@/lib/expenses';
-import { TrendingUp, Wallet, Home } from 'lucide-react';
+import { TrendingUp, Wallet, Home as HomeIcon } from 'lucide-react';
 
 export default function Home() {
   const [expenses, setExpenses] = useState([]);
@@ -70,7 +70,7 @@ export default function Home() {
       <header className="mb-12 animate-fade-in">
         <div className="flex items-center gap-4 mb-3">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center shadow-glow">
-            <Home className="w-8 h-8 text-white" />
+            <HomeIcon className="w-8 h-8 text-white" />
           </div>
           <div>
             <h1 className="text-4xl font-bold gradient-text">Haushaltsplan</h1>
@@ -81,7 +81,7 @@ export default function Home() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 animate-slide-up">
-        <div className="card group">
+        <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700/50 backdrop-blur-sm transition-smooth hover:border-primary-500/50 hover:shadow-glow group">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
@@ -100,7 +100,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="card group">
+        <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700/50 backdrop-blur-sm transition-smooth hover:border-primary-500/50 hover:shadow-glow group">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">

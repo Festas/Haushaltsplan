@@ -102,7 +102,7 @@ export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
     return (
       <button
         onClick={() => setShowForm(true)}
-        className="w-full btn-primary group flex items-center justify-center gap-3"
+        className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-500 hover:to-primary-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-glow transition-smooth hover:scale-[1.02] active:scale-[0.98] group flex items-center justify-center gap-3"
       >
         <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
         <span>Neue Ausgabe hinzufügen</span>
@@ -111,7 +111,7 @@ export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
   }
 
   return (
-    <div className="card animate-scale-in">
+    <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700/50 backdrop-blur-sm transition-smooth hover:border-primary-500/50 hover:shadow-glow animate-scale-in">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary-500/10 flex items-center justify-center">
@@ -139,7 +139,7 @@ export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             required
-            className="input-modern"
+            className="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-smooth backdrop-blur-sm"
             placeholder="0.00"
           />
         </div>
@@ -154,7 +154,7 @@ export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
-            className="input-modern"
+            className="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-smooth backdrop-blur-sm"
             placeholder="z.B. Einkauf bei Rewe"
           />
         </div>
@@ -168,7 +168,7 @@ export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
             value={payerId}
             onChange={(e) => setPayerId(e.target.value)}
             required
-            className="input-modern"
+            className="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-smooth backdrop-blur-sm"
           >
             {persons.map((person) => (
               <option key={person.id} value={person.id}>
@@ -187,7 +187,7 @@ export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
             required
-            className="input-modern"
+            className="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-smooth backdrop-blur-sm"
           >
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
@@ -306,7 +306,7 @@ export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
           <button
             type="button"
             onClick={() => setShowForm(false)}
-            className="flex-1 btn-secondary"
+            className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-xl border border-gray-600 hover:border-gray-500 transition-smooth hover:scale-[1.02] active:scale-[0.98]"
             disabled={loading}
           >
             Abbrechen
@@ -314,7 +314,7 @@ export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 btn-primary flex items-center justify-center gap-2"
+            className="flex-1 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-500 hover:to-primary-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-glow transition-smooth hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
           >
             {loading ? (
               <>

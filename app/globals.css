@@ -49,33 +49,3 @@ body {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
-
-@layer components {
-  /* Modern card style */
-  .card {
-    @apply bg-gradient-to-br from-gray-800/90 to-gray-900/90 rounded-2xl p-6 border border-gray-700/50 backdrop-blur-sm transition-smooth;
-  }
-  
-  .card:hover {
-    @apply border-primary-500/50 shadow-glow;
-  }
-  
-  /* Modern button */
-  .btn-primary {
-    @apply bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-500 hover:to-primary-600 
-           text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-glow 
-           transition-smooth hover:scale-[1.02] active:scale-[0.98];
-  }
-  
-  .btn-secondary {
-    @apply bg-gray-700/50 hover:bg-gray-600/50 text-white font-semibold py-3 px-6 rounded-xl 
-           border border-gray-600/50 hover:border-gray-500/50 transition-smooth hover:scale-[1.02] active:scale-[0.98];
-  }
-  
-  /* Modern input */
-  .input-modern {
-    @apply w-full bg-gray-800/50 border border-gray-600/50 rounded-xl px-4 py-3 
-           focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 
-           transition-smooth backdrop-blur-sm;
-  }
-}

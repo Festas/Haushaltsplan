@@ -10,7 +10,7 @@ interface ExpenseListProps {
 export default function ExpenseList({ expenses }: ExpenseListProps) {
   if (expenses.length === 0) {
     return (
-      <div className="card text-center py-12">
+      <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700/50 backdrop-blur-sm transition-smooth hover:border-primary-500/50 hover:shadow-glow text-center py-12">
         <div className="w-16 h-16 rounded-2xl bg-gray-700/50 flex items-center justify-center mx-auto mb-4">
           <Receipt className="w-8 h-8 text-gray-500" />
         </div>
@@ -59,7 +59,7 @@ export default function ExpenseList({ expenses }: ExpenseListProps) {
       {expenses.map((expense, index) => (
         <div
           key={expense.id}
-          className="card group animate-fade-in"
+          className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700/50 backdrop-blur-sm transition-smooth hover:border-primary-500/50 hover:shadow-glow group animate-fade-in"
           style={{ animationDelay: `${index * 50}ms` }}
         >
           <div className="flex items-start gap-4">

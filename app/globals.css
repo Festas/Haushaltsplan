@@ -22,4 +22,30 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  
+  /* Glass morphism effect */
+  .glass {
+    background: rgba(17, 24, 39, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  
+  .glass-light {
+    background: rgba(31, 41, 55, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, #0ea5e9 0%, #d946ef 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Smooth transitions */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }

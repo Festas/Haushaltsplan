@@ -326,7 +326,7 @@ export default function ExpenseEditModal({ expense, onClose, onSave, onError }: 
               className="flex-1 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-500 hover:to-primary-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-glow transition-smooth hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
             >
               {loading ? (
-                <span className="flex items-center gap-2" role="status" aria-live="polite">
+                <span className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Ausgabe wird gespeichert">
                   <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden="true" />
                   <span>Wird gespeichert...</span>
                 </span>

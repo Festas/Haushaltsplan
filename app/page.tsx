@@ -68,7 +68,7 @@ export default function Home() {
     const thisMonth = thisMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
 
     return { total, thisMonth };
-  }, [expenses, filteredExpenses]);
+  }, [expenses, filteredExpenses]); // Added expenses to dependency array
 
   async function loadData() {
     try {

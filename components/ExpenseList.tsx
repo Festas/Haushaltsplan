@@ -1,15 +1,94 @@
 'use client';
 
+import { useState } from 'react';
 import { formatCurrency, formatDate } from '@/lib/expenses';
-import { Calendar, User, PieChart, Receipt } from 'lucide-react';
+import { Calendar, User, PieChart, Receipt, Edit2, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import type { Expense, ExpenseAssignment } from '@/lib/types';
+import ExpenseEditModal from './ExpenseEditModal';
+
+type SortField = 'date' | 'amount' | 'category';
+type SortDirection = 'asc' | 'desc';
 
 interface ExpenseListProps {
   expenses: Expense[];
+  onExpenseUpdated?: () => void;
+  onExpenseDeleted?: () => void;
+  onError?: (error: string) => void;
 }
 
-export default function ExpenseList({ expenses }: ExpenseListProps) {
-  if (expenses.length === 0) {
+export default function ExpenseList({ expenses, onExpenseUpdated, onExpenseDeleted, onError }: ExpenseListProps) {
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null);
+  const [sortField, setSortField] = useState<SortField>('date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+
+  // Sort expenses
+  const sortedExpenses = [...expenses].sort((a, b) => {
+    let comparison = 0;
+    
+    if (sortField === 'date') {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      comparison = dateA - dateB;
+    } else if (sortField === 'amount') {
+      comparison = a.amount - b.amount;
+    } else if (sortField === 'category') {
+      comparison = a.category.name.localeCompare(b.category.name);
+    }
+    
+    return sortDirection === 'asc' ? comparison : -comparison;
+  });
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection(field === 'date' ? 'desc' : 'asc');
+    }
+  };
+
+  const handleDelete = async (expenseId: string) => {
+    if (!window.confirm('Möchten Sie diese Ausgabe wirklich löschen?')) {
+      return;
+    }
+
+    setDeletingExpenseId(expenseId);
+    try {
+      const response = await fetch(`/api/expenses/${expenseId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        onExpenseDeleted?.();
+      } else {
+        const data = await response.json();
+        onError?.(data.error || 'Fehler beim Löschen der Ausgabe');
+      }
+    } catch (err) {
+      console.error('Error deleting expense:', err);
+      onError?.('Netzwerkfehler beim Löschen der Ausgabe');
+    } finally {
+      setDeletingExpenseId(null);
+    }
+  };
+
+  const handleSave = async (expenseId: string, data: any) => {
+    const response = await fetch(`/api/expenses/${expenseId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Fehler beim Aktualisieren der Ausgabe');
+    }
+
+    onExpenseUpdated?.();
+  };
+
+  if (sortedExpenses.length === 0) {
     return (
       <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700/50 backdrop-blur-sm transition-smooth hover:border-primary-500/50 hover:shadow-glow text-center py-12">
         <div className="w-16 h-16 rounded-2xl bg-gray-700/50 flex items-center justify-center mx-auto mb-4">
@@ -53,11 +132,58 @@ export default function ExpenseList({ expenses }: ExpenseListProps) {
         </div>
         <h2 className="text-2xl font-bold">Ausgaben</h2>
         <div className="ml-auto px-4 py-1.5 bg-gray-800/50 rounded-xl text-sm text-gray-400 border border-gray-700/50">
-          {expenses.length} {expenses.length === 1 ? 'Eintrag' : 'Einträge'}
+          {sortedExpenses.length} {sortedExpenses.length === 1 ? 'Eintrag' : 'Einträge'}
         </div>
       </div>
+
+      {/* Sort Controls */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        <span className="text-sm text-gray-400 self-center mr-2">Sortieren nach:</span>
+        <button
+          onClick={() => handleSort('date')}
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition-smooth flex items-center gap-2 ${
+            sortField === 'date'
+              ? 'bg-primary-600/20 text-primary-400 border border-primary-500/50'
+              : 'bg-gray-800/50 text-gray-400 border border-gray-700/50 hover:bg-gray-700/50'
+          }`}
+        >
+          <Calendar className="w-4 h-4" />
+          Datum
+          {sortField === 'date' && (
+            sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+          )}
+        </button>
+        <button
+          onClick={() => handleSort('amount')}
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition-smooth flex items-center gap-2 ${
+            sortField === 'amount'
+              ? 'bg-primary-600/20 text-primary-400 border border-primary-500/50'
+              : 'bg-gray-800/50 text-gray-400 border border-gray-700/50 hover:bg-gray-700/50'
+          }`}
+        >
+          <ArrowUpDown className="w-4 h-4" />
+          Betrag
+          {sortField === 'amount' && (
+            sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+          )}
+        </button>
+        <button
+          onClick={() => handleSort('category')}
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition-smooth flex items-center gap-2 ${
+            sortField === 'category'
+              ? 'bg-primary-600/20 text-primary-400 border border-primary-500/50'
+              : 'bg-gray-800/50 text-gray-400 border border-gray-700/50 hover:bg-gray-700/50'
+          }`}
+        >
+          <PieChart className="w-4 h-4" />
+          Kategorie
+          {sortField === 'category' && (
+            sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+          )}
+        </button>
+      </div>
       
-      {expenses.map((expense, index) => (
+      {sortedExpenses.map((expense, index) => (
         <div
           key={expense.id}
           className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700/50 backdrop-blur-sm transition-smooth hover:border-primary-500/50 hover:shadow-glow group animate-fade-in"
@@ -129,10 +255,51 @@ export default function ExpenseList({ expenses }: ExpenseListProps) {
                   </div>
                 </div>
               )}
+
+              {/* Action Buttons */}
+              <div className="mt-4 pt-4 border-t border-gray-700/50 flex gap-2">
+                <button
+                  onClick={() => setEditingExpense(expense)}
+                  className="flex-1 bg-gray-700/50 hover:bg-gray-600/50 text-gray-200 font-medium py-2 px-4 rounded-xl border border-gray-600/50 hover:border-primary-500/50 transition-smooth flex items-center justify-center gap-2 group"
+                >
+                  <Edit2 className="w-4 h-4 group-hover:text-primary-400 transition-colors" />
+                  <span>Bearbeiten</span>
+                </button>
+                <button
+                  onClick={() => handleDelete(expense.id)}
+                  disabled={deletingExpenseId === expense.id}
+                  className="flex-1 bg-gray-700/50 hover:bg-red-600/20 text-gray-200 hover:text-red-400 font-medium py-2 px-4 rounded-xl border border-gray-600/50 hover:border-red-500/50 transition-smooth flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {deletingExpenseId === expense.id ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-gray-400/30 border-t-gray-400 rounded-full animate-spin" />
+                      <span>Löschen...</span>
+                    </span>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4 group-hover:text-red-400 transition-colors" />
+                      <span>Löschen</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       ))}
+
+      {/* Edit Modal */}
+      {editingExpense && (
+        <ExpenseEditModal
+          expense={editingExpense}
+          onClose={() => setEditingExpense(null)}
+          onSave={handleSave}
+          onError={(error) => {
+            onError?.(error);
+            setEditingExpense(null);
+          }}
+        />
+      )}
     </div>
   );
 }

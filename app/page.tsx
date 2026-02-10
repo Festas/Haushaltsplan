@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import ExpenseForm from '@/components/ExpenseForm';
 import ExpenseList from '@/components/ExpenseList';
+import ExpenseFilter, { FilterPeriod } from '@/components/ExpenseFilter';
 import Settlement from '@/components/Settlement';
 import ToastContainer from '@/components/Toast';
 import { formatCurrency } from '@/lib/expenses';
@@ -14,7 +15,7 @@ export default function Home() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [settlement, setSettlement] = useState<SettlementType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<Stats>({ total: 0, thisMonth: 0 });
+  const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>('all');
   const { toasts, removeToast, success, error } = useToast();
 
   useEffect(() => {
@@ -22,6 +23,52 @@ export default function Home() {
     // Process recurring expenses on load
     fetch('/api/recurring/process', { method: 'POST' }).catch(console.error);
   }, []);
+
+  // Filter expenses based on selected period
+  const filteredExpenses = useMemo(() => {
+    if (filterPeriod === 'all') {
+      return expenses;
+    }
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    return expenses.filter((expense) => {
+      const expenseDate = new Date(expense.date);
+      const expenseYear = expenseDate.getFullYear();
+      const expenseMonth = expenseDate.getMonth();
+
+      switch (filterPeriod) {
+        case 'thisMonth':
+          return expenseMonth === currentMonth && expenseYear === currentYear;
+        case 'lastMonth':
+          const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+          const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+          return expenseMonth === lastMonth && expenseYear === lastMonthYear;
+        case 'thisYear':
+          return expenseYear === currentYear;
+        default:
+          return true;
+      }
+    });
+  }, [expenses, filterPeriod]);
+
+  // Calculate stats based on filtered expenses
+  const stats = useMemo(() => {
+    const total = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
+    
+    // "This Month" stat should always show the current month regardless of filter
+    const now = new Date();
+    const thisMonthExpenses = expenses.filter((e) => {
+      const expenseDate = new Date(e.date);
+      return expenseDate.getMonth() === now.getMonth() && 
+             expenseDate.getFullYear() === now.getFullYear();
+    });
+    const thisMonth = thisMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+    return { total, thisMonth };
+  }, [expenses, filteredExpenses]); // Added expenses to dependency array
 
   async function loadData() {
     try {
@@ -41,18 +88,6 @@ export default function Home() {
 
       setExpenses(expensesData);
       setSettlement(settlementData);
-
-      // Calculate stats
-      const total = expensesData.reduce((sum: number, e: Expense) => sum + e.amount, 0);
-      const now = new Date();
-      const thisMonthExpenses = expensesData.filter((e: Expense) => {
-        const expenseDate = new Date(e.date);
-        return expenseDate.getMonth() === now.getMonth() && 
-               expenseDate.getFullYear() === now.getFullYear();
-      });
-      const thisMonth = thisMonthExpenses.reduce((sum: number, e: Expense) => sum + e.amount, 0);
-
-      setStats({ total, thisMonth });
       setLoading(false);
     } catch (err) {
       console.error('Error loading data:', err);
@@ -64,6 +99,16 @@ export default function Home() {
   async function handleExpenseCreated() {
     await loadData();
     success('Ausgabe erfolgreich hinzugefügt');
+  }
+
+  async function handleExpenseUpdated() {
+    await loadData();
+    success('Ausgabe erfolgreich aktualisiert');
+  }
+
+  async function handleExpenseDeleted() {
+    await loadData();
+    success('Ausgabe erfolgreich gelöscht');
   }
 
   async function handleExpenseError(errorMessage: string) {
@@ -125,7 +170,12 @@ export default function Home() {
                 <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
                   <Wallet className="w-5 h-5 text-green-400" />
                 </div>
-                <div className="text-sm font-medium text-gray-400">Gesamt</div>
+                <div className="text-sm font-medium text-gray-400">
+                  {filterPeriod === 'all' ? 'Gesamt' : 
+                   filterPeriod === 'thisMonth' ? 'Dieser Monat' :
+                   filterPeriod === 'lastMonth' ? 'Letzter Monat' :
+                   'Dieses Jahr'}
+                </div>
               </div>
               <div className="text-3xl font-bold text-green-400 tracking-tight">
                 {formatCurrency(stats.total)}
@@ -133,7 +183,9 @@ export default function Home() {
             </div>
           </div>
           <div className="mt-4 pt-4 border-t border-gray-700/50">
-            <div className="text-xs text-gray-500">Alle Ausgaben</div>
+            <div className="text-xs text-gray-500">
+              {filterPeriod === 'all' ? 'Alle Ausgaben' : 'Gefilterte Ausgaben'}
+            </div>
           </div>
         </div>
       </div>
@@ -150,9 +202,19 @@ export default function Home() {
         <ExpenseForm onExpenseCreated={handleExpenseCreated} onError={handleExpenseError} />
       </div>
 
+      {/* Expense Filter */}
+      <div className="mb-8 animate-slide-up">
+        <ExpenseFilter selectedPeriod={filterPeriod} onPeriodChange={setFilterPeriod} />
+      </div>
+
       {/* Expense List */}
       <div className="animate-slide-up">
-        <ExpenseList expenses={expenses} />
+        <ExpenseList 
+          expenses={filteredExpenses} 
+          onExpenseUpdated={handleExpenseUpdated}
+          onExpenseDeleted={handleExpenseDeleted}
+          onError={handleExpenseError}
+        />
       </div>
     </main>
   );

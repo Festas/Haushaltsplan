@@ -2,15 +2,10 @@
 
 import { formatCurrency } from '@/lib/expenses';
 import { ArrowRight, DollarSign, Sparkles } from 'lucide-react';
-
-interface SettlementItem {
-  from: string;
-  to: string;
-  amount: number;
-}
+import type { Settlement as SettlementType } from '@/lib/types';
 
 interface SettlementProps {
-  settlements: SettlementItem[];
+  settlements: SettlementType[];
 }
 
 export default function Settlement({ settlements }: SettlementProps) {

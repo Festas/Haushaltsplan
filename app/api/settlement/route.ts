@@ -7,6 +7,6 @@ export async function GET() {
     return NextResponse.json(settlements);
   } catch (error) {
     console.error('Error calculating settlement:', error);
-    return NextResponse.json({ error: 'Failed to calculate settlement' }, { status: 500 });
+    return NextResponse.json({ error: 'Fehler beim Berechnen der Abrechnung' }, { status: 500 });
   }
 }

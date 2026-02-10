@@ -12,6 +12,6 @@ export async function GET() {
     return NextResponse.json(persons);
   } catch (error) {
     console.error('Error fetching persons:', error);
-    return NextResponse.json({ error: 'Failed to fetch persons' }, { status: 500 });
+    return NextResponse.json({ error: 'Fehler beim Laden der Personen' }, { status: 500 });
   }
 }

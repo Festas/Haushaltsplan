@@ -2,9 +2,10 @@
 
 import { formatCurrency, formatDate } from '@/lib/expenses';
 import { Calendar, User, PieChart, Receipt } from 'lucide-react';
+import type { Expense, ExpenseAssignment } from '@/lib/types';
 
 interface ExpenseListProps {
-  expenses: any[];
+  expenses: Expense[];
 }
 
 export default function ExpenseList({ expenses }: ExpenseListProps) {
@@ -115,7 +116,7 @@ export default function ExpenseList({ expenses }: ExpenseListProps) {
                 <div className="mt-4 pt-4 border-t border-gray-700/50">
                   <div className="text-xs font-medium text-gray-400 mb-2.5">Anteil:</div>
                   <div className="flex flex-wrap gap-2">
-                    {expense.assignments.map((assignment: any) => (
+                    {expense.assignments.map((assignment: ExpenseAssignment) => (
                       <div
                         key={assignment.id}
                         className="px-3 py-2 bg-gray-800/50 rounded-xl text-sm border border-gray-700/50 hover:border-primary-500/30 transition-smooth"

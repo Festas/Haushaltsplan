@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { calculateExpenseShares } from '@/lib/expenses';
+import { validateExpenseWithAssignment } from '@/lib/validations';
+import { z } from 'zod';
 
 export async function GET() {
   try {
@@ -22,14 +24,30 @@ export async function GET() {
     return NextResponse.json(expenses);
   } catch (error) {
     console.error('Error fetching expenses:', error);
-    return NextResponse.json({ error: 'Failed to fetch expenses' }, { status: 500 });
+    return NextResponse.json({ error: 'Fehler beim Laden der Ausgaben' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { amount, description, payerId, categoryId, splitType, assignedPersonIds } = body;
+    
+    // Validate input
+    let validatedData;
+    try {
+      validatedData = validateExpenseWithAssignment(body);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errorMessage = error.issues.map(e => e.message).join(', ');
+        return NextResponse.json({ error: errorMessage }, { status: 400 });
+      }
+      if (error instanceof Error) {
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+      return NextResponse.json({ error: 'Ungültige Eingabedaten' }, { status: 400 });
+    }
+
+    const { amount, description, payerId, categoryId, splitType, assignedPersonIds } = validatedData;
 
     // Calculate shares
     const shares = await calculateExpenseShares(
@@ -83,6 +101,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(completeExpense, { status: 201 });
   } catch (error) {
     console.error('Error creating expense:', error);
-    return NextResponse.json({ error: 'Failed to create expense' }, { status: 500 });
+    return NextResponse.json({ error: 'Fehler beim Erstellen der Ausgabe' }, { status: 500 });
   }
 }

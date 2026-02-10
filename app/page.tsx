@@ -4,15 +4,18 @@ import { useState, useEffect } from 'react';
 import ExpenseForm from '@/components/ExpenseForm';
 import ExpenseList from '@/components/ExpenseList';
 import Settlement from '@/components/Settlement';
+import ToastContainer from '@/components/Toast';
 import { formatCurrency } from '@/lib/expenses';
 import { TrendingUp, Wallet, Home as HomeIcon } from 'lucide-react';
 import type { Expense, Settlement as SettlementType, Stats } from '@/lib/types';
+import { useToast } from '@/hooks/useToast';
 
 export default function Home() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [settlement, setSettlement] = useState<SettlementType[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<Stats>({ total: 0, thisMonth: 0 });
+  const { toasts, removeToast, success, error } = useToast();
 
   useEffect(() => {
     loadData();
@@ -26,6 +29,12 @@ export default function Home() {
         fetch('/api/expenses'),
         fetch('/api/settlement'),
       ]);
+
+      if (!expensesRes.ok || !settlementRes.ok) {
+        error('Fehler beim Laden der Daten');
+        setLoading(false);
+        return;
+      }
 
       const expensesData = await expensesRes.json();
       const settlementData = await settlementRes.json();
@@ -45,14 +54,20 @@ export default function Home() {
 
       setStats({ total, thisMonth });
       setLoading(false);
-    } catch (error) {
-      console.error('Error loading data:', error);
+    } catch (err) {
+      console.error('Error loading data:', err);
+      error('Fehler beim Laden der Daten');
       setLoading(false);
     }
   }
 
   async function handleExpenseCreated() {
     await loadData();
+    success('Ausgabe erfolgreich hinzugefügt');
+  }
+
+  async function handleExpenseError(errorMessage: string) {
+    error(errorMessage);
   }
 
   if (loading) {
@@ -68,6 +83,8 @@ export default function Home() {
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <ToastContainer toasts={toasts} onClose={removeToast} />
+      
       <header className="mb-12 animate-fade-in">
         <div className="flex items-center gap-4 mb-3">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center shadow-glow">
@@ -130,7 +147,7 @@ export default function Home() {
 
       {/* Expense Form */}
       <div className="mb-8 animate-slide-up">
-        <ExpenseForm onExpenseCreated={handleExpenseCreated} />
+        <ExpenseForm onExpenseCreated={handleExpenseCreated} onError={handleExpenseError} />
       </div>
 
       {/* Expense List */}

@@ -16,15 +16,17 @@ interface Category {
 
 interface ExpenseFormProps {
   onExpenseCreated: () => void;
+  onError: (error: string) => void;
 }
 
-export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
+export default function ExpenseForm({ onExpenseCreated, onError }: ExpenseFormProps) {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [payerId, setPayerId] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [splitType, setSplitType] = useState<'EQUAL' | 'WEIGHTED' | 'ASSIGNED'>('EQUAL');
   const [assignedPersonIds, setAssignedPersonIds] = useState<string[]>([]);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   
   const [persons, setPersons] = useState<Person[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -59,6 +61,28 @@ export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setValidationErrors({});
+
+    // Frontend validation
+    const errors: Record<string, string> = {};
+    
+    if (!amount || parseFloat(amount) <= 0) {
+      errors.amount = 'Betrag muss größer als 0 sein';
+    }
+    
+    if (!description.trim()) {
+      errors.description = 'Beschreibung ist erforderlich';
+    }
+    
+    if (splitType === 'ASSIGNED' && assignedPersonIds.length === 0) {
+      errors.assignedPersonIds = 'Mindestens eine Person muss ausgewählt werden';
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/expenses', {
@@ -74,17 +98,24 @@ export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
         }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
         // Reset form
         setAmount('');
         setDescription('');
         setSplitType('EQUAL');
         setAssignedPersonIds([]);
+        setValidationErrors({});
         setShowForm(false);
         onExpenseCreated();
+      } else {
+        // Handle API error
+        onError(data.error || 'Fehler beim Erstellen der Ausgabe');
       }
-    } catch (error) {
-      console.error('Error creating expense:', error);
+    } catch (err) {
+      console.error('Error creating expense:', err);
+      onError('Netzwerkfehler beim Erstellen der Ausgabe');
     } finally {
       setLoading(false);
     }
@@ -139,9 +170,14 @@ export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             required
-            className="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-smooth backdrop-blur-sm"
+            className={`w-full bg-gray-800 border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-smooth backdrop-blur-sm ${
+              validationErrors.amount ? 'border-red-500' : 'border-gray-600'
+            }`}
             placeholder="0.00"
           />
+          {validationErrors.amount && (
+            <p className="mt-1 text-sm text-red-400">{validationErrors.amount}</p>
+          )}
         </div>
 
         <div>
@@ -154,9 +190,14 @@ export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
-            className="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-smooth backdrop-blur-sm"
+            className={`w-full bg-gray-800 border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-smooth backdrop-blur-sm ${
+              validationErrors.description ? 'border-red-500' : 'border-gray-600'
+            }`}
             placeholder="z.B. Einkauf bei Rewe"
           />
+          {validationErrors.description && (
+            <p className="mt-1 text-sm text-red-400">{validationErrors.description}</p>
+          )}
         </div>
 
         <div>
@@ -299,6 +340,9 @@ export default function ExpenseForm({ onExpenseCreated }: ExpenseFormProps) {
                 </label>
               ))}
             </div>
+            {validationErrors.assignedPersonIds && (
+              <p className="mt-2 text-sm text-red-400">{validationErrors.assignedPersonIds}</p>
+            )}
           </div>
         )}
 

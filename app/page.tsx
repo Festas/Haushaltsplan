@@ -6,12 +6,13 @@ import ExpenseList from '@/components/ExpenseList';
 import Settlement from '@/components/Settlement';
 import { formatCurrency } from '@/lib/expenses';
 import { TrendingUp, Wallet, Home as HomeIcon } from 'lucide-react';
+import type { Expense, Settlement as SettlementType, Stats } from '@/lib/types';
 
 export default function Home() {
-  const [expenses, setExpenses] = useState([]);
-  const [settlement, setSettlement] = useState([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [settlement, setSettlement] = useState<SettlementType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({ total: 0, thisMonth: 0 });
+  const [stats, setStats] = useState<Stats>({ total: 0, thisMonth: 0 });
 
   useEffect(() => {
     loadData();
@@ -33,14 +34,14 @@ export default function Home() {
       setSettlement(settlementData);
 
       // Calculate stats
-      const total = expensesData.reduce((sum: number, e: any) => sum + e.amount, 0);
+      const total = expensesData.reduce((sum: number, e: Expense) => sum + e.amount, 0);
       const now = new Date();
-      const thisMonthExpenses = expensesData.filter((e: any) => {
+      const thisMonthExpenses = expensesData.filter((e: Expense) => {
         const expenseDate = new Date(e.date);
         return expenseDate.getMonth() === now.getMonth() && 
                expenseDate.getFullYear() === now.getFullYear();
       });
-      const thisMonth = thisMonthExpenses.reduce((sum: number, e: any) => sum + e.amount, 0);
+      const thisMonth = thisMonthExpenses.reduce((sum: number, e: Expense) => sum + e.amount, 0);
 
       setStats({ total, thisMonth });
       setLoading(false);

@@ -68,3 +68,14 @@ export interface Stats {
   total: number;
   thisMonth: number;
 }
+
+export interface PersonStats {
+  personId: string;
+  personName: string;
+  totalPaid: number;
+  totalOwed: number;
+  balance: number;
+  thisMonthPaid: number;
+  thisMonthOwed: number;
+  expenseCount: number;
+}

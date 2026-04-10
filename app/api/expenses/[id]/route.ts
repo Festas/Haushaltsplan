@@ -27,7 +27,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Ungültige Eingabedaten' }, { status: 400 });
     }
 
-    const { amount, description, payerId, categoryId, splitType, assignedPersonIds } = validatedData;
+    const { amount, description, date, payerId, categoryId, splitType, assignedPersonIds } = validatedData;
 
     // Check if expense exists
     const existingExpense = await prisma.expense.findUnique({
@@ -58,6 +58,7 @@ export async function PUT(
         data: {
           amount: parseFloat(amount),
           description,
+          date: date ? new Date(date) : undefined,
           payerId,
           categoryId,
           splitType,

@@ -1,4 +1,6 @@
 import { prisma } from './db';
+import type { RecurringExpense } from '@prisma/client';
+import type { Settlement } from './types';
 
 export type SplitType = 'EQUAL' | 'WEIGHTED' | 'ASSIGNED';
 
@@ -6,12 +8,6 @@ export interface ExpenseShare {
   personId: string;
   personName: string;
   share: number;
-}
-
-export interface Settlement {
-  from: string;
-  to: string;
-  amount: number;
 }
 
 /**
@@ -122,9 +118,14 @@ export async function calculateSettlement(): Promise<Settlement[]> {
   });
 
   // Calculate net settlement
+  // Each person's balance = (total paid) - (total owed).
+  // With two people, balance1 = -balance2 (conservation of money).
+  // netBalance = balance1 - balance2 = balance1 - (-balance1) = 2 * balance1.
+  // The actual transfer amount is half the net difference.
   const netBalance = balances[person1.id] - balances[person2.id];
+  const settlementAmount = Math.abs(netBalance) / 2;
   
-  if (Math.abs(netBalance) < 0.01) {
+  if (settlementAmount < 0.01) {
     return []; // No settlement needed
   }
 
@@ -132,13 +133,13 @@ export async function calculateSettlement(): Promise<Settlement[]> {
     return [{
       from: person2.name,
       to: person1.name,
-      amount: Math.abs(netBalance),
+      amount: settlementAmount,
     }];
   } else {
     return [{
       from: person1.name,
       to: person2.name,
-      amount: Math.abs(netBalance),
+      amount: settlementAmount,
     }];
   }
 }
@@ -149,7 +150,13 @@ export async function calculateSettlement(): Promise<Settlement[]> {
 export async function processRecurringExpenses() {
   const now = new Date();
   const recurringExpenses = await prisma.recurringExpense.findMany({
-    where: { isActive: true },
+    where: {
+      isActive: true,
+      OR: [
+        { endDate: null },
+        { endDate: { gte: now } },
+      ],
+    },
   });
 
   for (const recurring of recurringExpenses) {
@@ -162,58 +169,76 @@ export async function processRecurringExpenses() {
         recurring.splitType as SplitType
       );
 
-      // Create expense
-      const expense = await prisma.expense.create({
-        data: {
-          amount: recurring.amount,
-          description: recurring.description,
-          payerId: recurring.payerId,
-          categoryId: recurring.categoryId,
-          splitType: recurring.splitType,
-          recurringExpenseId: recurring.id,
-          date: now,
-        },
-      });
+      // Create expense and assignments atomically
+      await prisma.$transaction(async (tx) => {
+        const expense = await tx.expense.create({
+          data: {
+            amount: recurring.amount,
+            description: recurring.description,
+            payerId: recurring.payerId,
+            categoryId: recurring.categoryId,
+            splitType: recurring.splitType,
+            recurringExpenseId: recurring.id,
+            date: now,
+          },
+        });
 
-      // Create assignments
-      await Promise.all(
-        shares.map(share =>
-          prisma.expenseAssignment.create({
-            data: {
-              expenseId: expense.id,
-              personId: share.personId,
-              share: share.share,
-            },
-          })
-        )
-      );
+        await Promise.all(
+          shares.map(share =>
+            tx.expenseAssignment.create({
+              data: {
+                expenseId: expense.id,
+                personId: share.personId,
+                share: share.share,
+              },
+            })
+          )
+        );
 
-      // Update lastCreated
-      await prisma.recurringExpense.update({
-        where: { id: recurring.id },
-        data: { lastCreated: now },
+        // Update lastCreated
+        await tx.recurringExpense.update({
+          where: { id: recurring.id },
+          data: { lastCreated: now },
+        });
       });
     }
   }
 }
 
-function shouldCreateExpense(recurring: any, now: Date): boolean {
+function shouldCreateExpense(recurring: RecurringExpense, now: Date): boolean {
   if (!recurring.lastCreated) {
     return true;
   }
 
   const lastCreated = new Date(recurring.lastCreated);
-  const daysSince = Math.floor((now.getTime() - lastCreated.getTime()) / (1000 * 60 * 60 * 24));
 
   switch (recurring.frequency) {
-    case 'daily':
+    case 'daily': {
+      const daysSince = Math.floor((now.getTime() - lastCreated.getTime()) / (1000 * 60 * 60 * 24));
       return daysSince >= 1;
-    case 'weekly':
+    }
+    case 'weekly': {
+      const daysSince = Math.floor((now.getTime() - lastCreated.getTime()) / (1000 * 60 * 60 * 24));
       return daysSince >= 7;
-    case 'monthly':
-      return daysSince >= 30;
-    case 'yearly':
-      return daysSince >= 365;
+    }
+    case 'monthly': {
+      // Use actual calendar months instead of 30-day approximation
+      const monthsSince =
+        (now.getFullYear() - lastCreated.getFullYear()) * 12 +
+        (now.getMonth() - lastCreated.getMonth());
+      return monthsSince >= 1;
+    }
+    case 'yearly': {
+      const yearsSince = now.getFullYear() - lastCreated.getFullYear();
+      // Check if we've passed the anniversary this year
+      if (yearsSince < 1) return false;
+      if (yearsSince > 1) return true;
+      // Same year difference of 1: check month/day
+      return (
+        now.getMonth() > lastCreated.getMonth() ||
+        (now.getMonth() === lastCreated.getMonth() && now.getDate() >= lastCreated.getDate())
+      );
+    }
     default:
       return false;
   }

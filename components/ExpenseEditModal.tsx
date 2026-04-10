@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Check, DollarSign, User, Tag, Split } from 'lucide-react';
+import { X, Check, DollarSign, User, Tag, Split, Calendar } from 'lucide-react';
 import type { Expense } from '@/lib/types';
 
 interface Person {
@@ -25,6 +25,10 @@ interface ExpenseEditModalProps {
 export default function ExpenseEditModal({ expense, onClose, onSave, onError }: ExpenseEditModalProps) {
   const [amount, setAmount] = useState(expense.amount.toString());
   const [description, setDescription] = useState(expense.description);
+  const [date, setDate] = useState(() => {
+    const d = typeof expense.date === 'string' ? new Date(expense.date) : expense.date;
+    return d.toISOString().split('T')[0];
+  });
   const [payerId, setPayerId] = useState(expense.payerId);
   const [categoryId, setCategoryId] = useState(expense.categoryId);
   const [splitType, setSplitType] = useState<'EQUAL' | 'WEIGHTED' | 'ASSIGNED'>(expense.splitType as 'EQUAL' | 'WEIGHTED' | 'ASSIGNED');
@@ -83,6 +87,7 @@ export default function ExpenseEditModal({ expense, onClose, onSave, onError }: 
       await onSave(expense.id, {
         amount,
         description,
+        date,
         payerId,
         categoryId,
         splitType,
@@ -163,6 +168,20 @@ export default function ExpenseEditModal({ expense, onClose, onSave, onError }: 
             {validationErrors.description && (
               <p className="mt-1 text-sm text-red-400">{validationErrors.description}</p>
             )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2 flex items-center gap-2 text-gray-300">
+              <Calendar className="w-4 h-4 text-primary-400" />
+              Datum
+            </label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+              className="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-smooth backdrop-blur-sm"
+            />
           </div>
 
           <div>

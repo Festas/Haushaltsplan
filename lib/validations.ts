@@ -20,6 +20,12 @@ export const createExpenseSchema = z.object({
     .string()
     .min(1, 'Beschreibung ist erforderlich')
     .max(500, 'Beschreibung darf maximal 500 Zeichen lang sein'),
+  date: z
+    .string()
+    .optional()
+    .refine((val) => !val || !isNaN(Date.parse(val)), {
+      message: 'Ungültiges Datum',
+    }),
   payerId: z.string().min(1, 'Zahler ist erforderlich'),
   categoryId: z.string().min(1, 'Kategorie ist erforderlich'),
   splitType: z.enum(['EQUAL', 'WEIGHTED', 'ASSIGNED'], {

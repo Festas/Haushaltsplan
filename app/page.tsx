@@ -7,13 +7,14 @@ import ExpenseFilter, { FilterPeriod } from '@/components/ExpenseFilter';
 import Settlement from '@/components/Settlement';
 import ToastContainer from '@/components/Toast';
 import { formatCurrency } from '@/lib/expenses';
-import { TrendingUp, Wallet, Home as HomeIcon } from 'lucide-react';
-import type { Expense, Settlement as SettlementType, Stats } from '@/lib/types';
+import { TrendingUp, Wallet, Home as HomeIcon, Users } from 'lucide-react';
+import type { Expense, Settlement as SettlementType, Stats, PersonStats } from '@/lib/types';
 import { useToast } from '@/hooks/useToast';
 
 export default function Home() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [settlement, setSettlement] = useState<SettlementType[]>([]);
+  const [personStats, setPersonStats] = useState<PersonStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>('all');
   const { toasts, removeToast, success, error } = useToast();
@@ -72,12 +73,13 @@ export default function Home() {
 
   async function loadData() {
     try {
-      const [expensesRes, settlementRes] = await Promise.all([
+      const [expensesRes, settlementRes, statsRes] = await Promise.all([
         fetch('/api/expenses'),
         fetch('/api/settlement'),
+        fetch('/api/stats'),
       ]);
 
-      if (!expensesRes.ok || !settlementRes.ok) {
+      if (!expensesRes.ok || !settlementRes.ok || !statsRes.ok) {
         error('Fehler beim Laden der Daten');
         setLoading(false);
         return;
@@ -85,9 +87,11 @@ export default function Home() {
 
       const expensesData = await expensesRes.json();
       const settlementData = await settlementRes.json();
+      const statsData = await statsRes.json();
 
       setExpenses(expensesData);
       setSettlement(settlementData);
+      setPersonStats(statsData);
       setLoading(false);
     } catch (err) {
       console.error('Error loading data:', err);
@@ -194,6 +198,56 @@ export default function Home() {
       {settlement.length > 0 && (
         <div className="mb-8 animate-slide-up">
           <Settlement settlements={settlement} />
+        </div>
+      )}
+
+      {/* Per-Person Stats */}
+      {personStats.length > 0 && (
+        <div className="mb-8 animate-slide-up">
+          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700/50 backdrop-blur-sm transition-smooth hover:border-primary-500/50 hover:shadow-glow">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-accent-500/10 flex items-center justify-center">
+                <Users className="w-5 h-5 text-accent-400" />
+              </div>
+              <h2 className="text-2xl font-bold">Pro Person</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {personStats.map((ps) => (
+                <div
+                  key={ps.personId}
+                  className="bg-gray-800/50 rounded-xl p-5 border border-gray-700/50 hover:border-primary-500/30 transition-smooth"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500/20 to-accent-500/20 border border-primary-500/30 flex items-center justify-center">
+                      <span className="text-lg font-bold text-primary-400">
+                        {ps.personName.charAt(0)}
+                      </span>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-white">{ps.personName}</div>
+                      <div className="text-xs text-gray-400">{ps.expenseCount} Ausgaben</div>
+                    </div>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Bezahlt:</span>
+                      <span className="font-medium text-green-400">{formatCurrency(ps.totalPaid)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Anteil:</span>
+                      <span className="font-medium text-orange-400">{formatCurrency(ps.totalOwed)}</span>
+                    </div>
+                    <div className="flex justify-between pt-2 border-t border-gray-700/50">
+                      <span className="text-gray-400">Saldo:</span>
+                      <span className={`font-bold ${ps.balance >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {ps.balance >= 0 ? '+' : ''}{formatCurrency(ps.balance)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 

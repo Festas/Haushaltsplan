@@ -119,7 +119,8 @@ export async function calculateSettlement(): Promise<Settlement[]> {
 
   // Calculate net settlement
   // Each person's balance = (total paid) - (total owed).
-  // With two people, balance1 = -balance2, so netBalance = 2 * balance1.
+  // With two people, balance1 = -balance2 (conservation of money).
+  // netBalance = balance1 - balance2 = balance1 - (-balance1) = 2 * balance1.
   // The actual transfer amount is half the net difference.
   const netBalance = balances[person1.id] - balances[person2.id];
   const settlementAmount = Math.abs(netBalance) / 2;
